@@ -97,7 +97,7 @@ class PostController extends Controller
 
             return response()->json(['success' => 'Post updated successfully']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['message' => $e], 500);
         }
     }
 
