@@ -6,6 +6,9 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Exception;
 
+
+use Intervention\Image\ImageManagerStatic as Image;
+
 class PostController extends Controller
 {
     //
@@ -19,12 +22,28 @@ class PostController extends Controller
     public function store(Request $request)
     {
         try {
-            $newPosts = $this->validate($request, [
+
+            $this->validate($request, [
                 'title' => 'required',
                 'author' => 'required',
+                'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
                 'richText' => 'required',
-                'image' => 'required'
             ]);
+
+            $img = "";
+            if ($request->hasFile('image')) {
+                $fileName = $request->file('image')->getClientOriginalName();
+                $finalName = date('His') . $fileName;
+                $img = $request->file('image')->storeAs('posts', $finalName);
+            }
+
+
+            $newPosts = [
+                'title' =>  $request['title'],
+                'author' => $request['author'],
+                'image' => $img,
+                'richText' => $request['richText']
+            ];
 
             return Post::create($newPosts);
         } catch (\Exception $e) {
@@ -49,20 +68,32 @@ class PostController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            // dd($request->title);
+
+            $this->validate($request, [
+                'title' => 'required',
+                'author' => 'required',
+                'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+                'richText' => 'required',
+            ]);
+
             $post = Post::find($id);
 
             if (!$post) return response()->json(['message' => 'Post not found']);
 
             // proceed if the post is already find.
-            $updatedPost = $this->validate($request, [
-                'title' => 'required',
-                'author' => 'required',
-                'richText' => 'required',
-                'image' => 'required'
-            ]);
+            if ($request->hasFile('image')) {
+                $fileName = $request->file('image')->getClientOriginalName();
+                $finalName = date('His') . $fileName;
+                $path = $request->file('image')->storeAs('posts', $finalName);
+                $post->image = $path;
+            }
 
-            $post->update($updatedPost);
+            $post->title = $request->title;
+            $post->author = $request->author;
+            $post->richText = $request->richText;
+
+            $post->save();
+
 
             return response()->json(['success' => 'Post updated successfully']);
         } catch (Exception $e) {
