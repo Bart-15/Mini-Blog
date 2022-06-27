@@ -57,7 +57,7 @@ class PostController extends Controller
         try {
             $post = Post::find($id);
 
-            if (!$post) return response()->json(['message' => 'Post not found.']);
+            if (!$post) return response()->json(['message' => 'Post not found.'], 404);
 
             return $post;
         } catch (\Exception $e) {
@@ -78,7 +78,7 @@ class PostController extends Controller
 
             $post = Post::find($id);
 
-            if (!$post) return response()->json(['message' => 'Post not found']);
+            if (!$post) return response()->json(['message' => 'Post not found'], 404);
 
             // proceed if the post is already find.
             if ($request->hasFile('image')) {
